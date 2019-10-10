@@ -1,0 +1,44 @@
+{
+  "name": "tserial",
+  "version": "1.0.0",
+  "description": "Runtime validation for TypeScript type expressions",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "scripts": {
+    "test": "jest",
+    "test:full": "yarn snippets && yarn test:render && yarn test",
+    "coverage": "jest --coverage",
+    "watch": "tsc --watch --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test:render": "ts-node ./test/render/render-content.ts",
+    "snippets": "ts-node ./dev/generate-assertion-snippets.ts",
+    "build": "yarn snippets && tsc -p tsconfig.build.json",
+    "clean": "rm -rf ./dist",
+    "cli": "ts-node ./src/cli/index.ts"
+  },
+  "bin": {
+    "tserial": "dist/cli/index.js"
+  },
+  "files": [
+    "/dist"
+  ],
+  "dependencies": {
+    "typescript": "^3.6.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.18",
+    "@types/node": "^12.7.12",
+    "@types/prettier": "^1.18.3",
+    "@typescript-eslint/eslint-plugin": "^2.3.3",
+    "@typescript-eslint/parser": "^2.3.3",
+    "@typescript-eslint/typescript-estree": "^2.3.3",
+    "eslint": "^6.5.1",
+    "eslint-config-prettier": "^6.4.0",
+    "jest": "^24.9.0",
+    "jest-codemods": "^0.20.0",
+    "prettier": "^1.18.2",
+    "ts-jest": "^24.1.0",
+    "ts-node": "^8.4.1"
+  }
+}
