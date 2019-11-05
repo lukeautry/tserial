@@ -13,7 +13,9 @@ export const ErrorTypes = {
    * Given `type MyGeneric<T> = T`, a valid serializable alias could be:
    *    `type TestAlias = MyGeneric<string>`
    */
-  UNRESOLVED_GENERIC: "Generics must resolve to a fully qualified type."
+  UNRESOLVED_GENERIC: "Generics must resolve to a fully qualified type.",
+  MULTIPLE_TOP_LEVEL_NAMES: "Multiple type expressions found with the same name. Names must be unique.",
+  UNSUPPORTED_NODE_TYPE: "Only interfaces and type aliases can be scanned."
 };
 
 type ErrorType = keyof typeof ErrorTypes;

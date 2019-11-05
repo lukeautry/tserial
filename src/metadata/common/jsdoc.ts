@@ -1,6 +1,6 @@
 import { Node, JSDoc } from "typescript";
 
-type WithJsDoc<T> = T & { jsDoc: JSDoc[] };
+export type WithJsDoc<T> = T & { jsDoc: JSDoc[] };
 
 export const hasJSDocNodes = <T extends Node>(
   node: T

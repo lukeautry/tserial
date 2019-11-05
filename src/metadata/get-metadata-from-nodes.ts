@@ -1,6 +1,6 @@
 import ts from "typescript";
 import { RootValue } from "../common/types";
-import { hasJSDocNodes } from "./common/jsdoc";
+import { hasJSDocNodes, WithJsDoc } from "./common/jsdoc";
 import { getValueFromInterface } from "./get-value-from-interface";
 import { Cache } from "./common/cache";
 import { getValueFromType } from "./get-value-from-type";
@@ -12,6 +12,43 @@ interface IMetadataFromNodesParams {
   nodes: ts.Node[];
   tagName: string;
   typeChecker: ts.TypeChecker;
+}
+
+type IGetNodeValueParams = {
+  node: WithJsDoc<ts.Node>;
+  typeChecker: ts.TypeChecker;
+  filePath: string;
+  cache: Cache;
+};
+
+const getNodeValue = ({ node, typeChecker, filePath, cache }: IGetNodeValueParams) => {
+  if (ts.isInterfaceDeclaration(node)) {
+    return {
+      ...getValueFromInterface({
+        node,
+        typeChecker,
+        name: node.name.text,
+        cache
+      }),
+      filePath
+    };
+  } else if (ts.isTypeAliasDeclaration(node)) {
+    if (node.typeParameters) {
+      throw new UnsupportedError("UNRESOLVED_GENERIC", node);
+    }
+
+    return {
+      ...getValueFromType({
+        typeNode: node.type,
+        cache,
+        name: node.name.text,
+        typeChecker
+      }),
+      filePath
+    }
+  } else {
+    throw new UnsupportedError('UNSUPPORTED_NODE_TYPE');
+  }
 }
 
 export const metadataFromNodes = ({
@@ -45,32 +82,21 @@ export const metadataFromNodes = ({
       throw new UnexpectedError(`Unable to find the source file for node.`);
     }
     const filePath = sourceFile.fileName;
+    const rootNodeNames: Record<string, true | undefined> = {};
 
-    if (ts.isInterfaceDeclaration(node)) {
-      values.push({
-        ...getValueFromInterface({
-          node,
-          typeChecker,
-          name: node.name.text,
-          cache
-        }),
-        filePath
-      });
-    } else if (ts.isTypeAliasDeclaration(node)) {
-      if (node.typeParameters) {
-        throw new UnsupportedError("UNRESOLVED_GENERIC", node);
-      }
+    const value = getNodeValue({
+      cache,
+      filePath,
+      typeChecker,
+      node
+    })
+    values.push(value);
 
-      values.push({
-        ...getValueFromType({
-          typeNode: node.type,
-          cache,
-          name: node.name.text,
-          typeChecker
-        }),
-        filePath
-      });
+    if (rootNodeNames[value.name]) {
+      throw new UnsupportedError('MULTIPLE_TOP_LEVEL_NAMES');
     }
+
+    rootNodeNames[value.name] = true;
   });
 
   return {
