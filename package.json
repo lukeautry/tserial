@@ -1,6 +1,6 @@
 {
   "name": "tserial",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Runtime validation for TypeScript type expressions",
   "license": "MIT",
   "main": "./dist/index.js",
@@ -15,7 +15,11 @@
     "snippets": "ts-node ./dev/generate-assertion-snippets.ts",
     "build": "yarn snippets && tsc -p tsconfig.build.json",
     "clean": "rm -rf ./dist",
-    "cli": "ts-node ./src/cli/index.ts"
+    "cli": "ts-node ./src/cli/index.ts",
+    "prepare": "yarn build",
+    "deploy": "yarn version patch -m \"RELEASE: v%s\" && yarn publish",
+    "preversion": "yarn test:full",
+    "postversion": "git push origin master && git push --follow-tags"
   },
   "bin": {
     "tserial": "dist/cli/index.js"
