@@ -38,7 +38,6 @@ describe("[alias] deserialize union type", () => {
 
   it("should not deserialize true", () => {
     assertError(deserialize("TypeAlias", true), result => {
-      console.log(result);
       expect(result).toEqual({
         success: false,
         kind: "one-of",
