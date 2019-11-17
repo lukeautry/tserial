@@ -21,7 +21,12 @@ type IGetNodeValueParams = {
   cache: Cache;
 };
 
-const getNodeValue = ({ node, typeChecker, filePath, cache }: IGetNodeValueParams) => {
+const getNodeValue = ({
+  node,
+  typeChecker,
+  filePath,
+  cache
+}: IGetNodeValueParams) => {
   if (ts.isInterfaceDeclaration(node)) {
     return {
       ...getValueFromInterface({
@@ -45,11 +50,11 @@ const getNodeValue = ({ node, typeChecker, filePath, cache }: IGetNodeValueParam
         typeChecker
       }),
       filePath
-    }
+    };
   } else {
-    throw new UnsupportedError('UNSUPPORTED_NODE_TYPE');
+    throw new UnsupportedError("UNSUPPORTED_NODE_TYPE");
   }
-}
+};
 
 export const metadataFromNodes = ({
   nodes,
@@ -60,7 +65,7 @@ export const metadataFromNodes = ({
   const values = new Array<RootValue>();
 
   nodes.forEach(node => {
-    // TODO: Handle namespaces and type aliases?
+    // TODO: Handle namespaces?
     const supportedDeclarationType =
       ts.isTypeAliasDeclaration(node) || ts.isInterfaceDeclaration(node);
     if (!(supportedDeclarationType && hasJSDocNodes(node))) {
@@ -89,11 +94,12 @@ export const metadataFromNodes = ({
       filePath,
       typeChecker,
       node
-    })
+    });
+
     values.push(value);
 
     if (rootNodeNames[value.name]) {
-      throw new UnsupportedError('MULTIPLE_TOP_LEVEL_NAMES');
+      throw new UnsupportedError("MULTIPLE_TOP_LEVEL_NAMES");
     }
 
     rootNodeNames[value.name] = true;

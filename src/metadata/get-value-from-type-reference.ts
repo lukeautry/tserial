@@ -38,9 +38,10 @@ export const getValueFromTypeReference = (
 
   const checkedType = typeChecker.getTypeAtLocation(typeName);
   if (checkedType.aliasSymbol) {
-    // TODO: There can be multiple declarations here
+    // TODO: There can be multiple declarations here; unclear what scenarios would allow for that
     const [declaration] = checkedType.aliasSymbol.declarations;
     if (ts.isTypeAliasDeclaration(declaration)) {
+      // TODO: Implement support for mapped types, if possible
       if (ts.isMappedTypeNode(declaration.type)) {
         throw new UnsupportedError(
           "MAPPED_TYPES_NOT_ALLOWED",

@@ -8,12 +8,13 @@ interface IGetValueFromTypeLiteralParams extends IGetValueParams {
   typeNode: ts.TypeLiteralNode;
 }
 
-export const getValueFromTypeLiteral = (
-  params: IGetValueFromTypeLiteralParams
-) => {
-  const { cache, typeNode, typeChecker, name } = params;
-
-  return cache.buildValue("object", {
+export const getValueFromTypeLiteral = ({
+  cache,
+  typeNode,
+  typeChecker,
+  name
+}: IGetValueFromTypeLiteralParams) =>
+  cache.buildValue("object", {
     name,
     properties: typeNode.members.map(member => {
       if (ts.isPropertySignature(member) && member.type) {
@@ -40,4 +41,3 @@ export const getValueFromTypeLiteral = (
       }
     })
   });
-};
