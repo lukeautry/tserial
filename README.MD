@@ -32,8 +32,6 @@ TypeScript's structural typing system offers a powerful way to represent the sha
 
 ## Installation
 
-NOTE: This is not yet published on NPM
-
 ```sh
 npm install tserial --save-dev
 
