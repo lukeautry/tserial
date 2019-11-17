@@ -1,6 +1,6 @@
 {
   "name": "tserial",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Runtime validation for TypeScript type expressions",
   "license": "MIT",
   "main": "./dist/index.js",
