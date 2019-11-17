@@ -66,4 +66,6 @@ tserial --out ./path/to/generated_file.ts --deno
 
 ### Node API
 
-The best documentation is the source code itself. Check out [this file](test/render/render-content.ts) for an example of how the test suite calls the Node API.
+Check out [render-content in renderer tests](test/render/render-content.ts) for an example of how the test suite calls the Node API.
+
+Direct use of the Node API will allow greater flexibility within existing build systems, but the CLI may be faster to start with.
