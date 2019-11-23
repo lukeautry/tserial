@@ -13,9 +13,9 @@ Runtime deserialization for TypeScript interfaces and type aliases
 
 [Read the blog post for a high level summary](https://lukeautry.com/blog/tserial)
 
-TypeScript's structural typing system offers a powerful way to represent the shape of data. Data delivered across system is, by default, not validated. A developer version can use type assertions to "cast" untrusted input to the intended type, but this is insecure and incorrect. The developer should write code that validates input data and coerces it to the right type.
+TypeScript's structural typing system offers a powerful way to represent the shape of data. Data delivered across systems is, by default, not validated. A developer version can use type assertions to "cast" untrusted input to the expected type, but this is often done in an insecure way. Developers will usually write code that validates input data and coerces it to the right type.
 
-`tserial` automates this process and offers the developer a way to securely deserialize data at runtime.
+`tserial` automates this process and offers a way to securely deserialize data at runtime.
 
 ## Design Goals
 
@@ -27,7 +27,7 @@ TypeScript's structural typing system offers a powerful way to represent the sha
 - Should have minimal build time dependencies
 - Deserialization routine should use composable assertions and type guards which incrementally prove adherence to a type expression via narrowing
   - Hedges against "stale" output since compiler will usually raise errors when narrowing produces an incomplete type
-- Deserialization routine must produce granular error data; if data isn't valid, useful, structured error data should be returned to the caller
+- Deserialization routine must produce granular error data. If data isn't valid, structured error data should be returned to the caller
 - Node.js, browser, and [deno](https://github.com/denoland/deno) support
 
 ## Installation
