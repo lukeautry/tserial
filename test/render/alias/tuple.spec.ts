@@ -26,10 +26,9 @@ describe("[alias] deserialize tuple", () => {
       deserialize("TypeAlias", ["test", "1234", true, null]),
       result => {
         expect(result).toEqual({
-          success: false,
-          kind: "keyed",
+          kind: "object-key",
           key: "[1]",
-          value: { success: false, kind: "single", value: "number" }
+          value: { kind: "single", value: "number" }
         });
       }
     );

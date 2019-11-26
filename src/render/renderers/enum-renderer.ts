@@ -7,7 +7,7 @@ export const enumRenderer: (params: IRenderParams<"enum">) => string = ({
   name
 }) => {
   if (value.values.length > 0) {
-    cache.includeSnippet("success", "error");
+    cache.includeSnippet("success");
   }
   return `(() => {
     const arr = [${value.values.map(v => getEscaped(v))}];
@@ -17,8 +17,11 @@ export const enumRenderer: (params: IRenderParams<"enum">) => string = ({
       }
     }
 
-    return error('one-of', {
-      values: [${value.values.map(v => getEscaped(v)).join(",")}]
-    });
+    return {
+      kind: 'one-of',
+      values: [${value.values
+        .map(v => `{ kind: 'single', value: ${getEscaped(v)} }`)
+        .join(",")}]
+    } as const;
   })()`;
 };

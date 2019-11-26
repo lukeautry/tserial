@@ -41,10 +41,9 @@ describe("[alias] deserialize intersection type", () => {
       }),
       result => {
         expect(result).toEqual({
-          success: false,
-          kind: "keyed",
+          kind: "object-key",
           key: "two",
-          value: { success: false, kind: "single", value: "number" }
+          value: { kind: "single", value: "number" }
         });
       }
     );

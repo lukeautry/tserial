@@ -8,7 +8,7 @@ export const tupleRenderer: (params: IRenderParams<"tuple">) => string = ({
   varName,
   name
 }) => {
-  cache.includeSnippet("array", "success", "error");
+  cache.includeSnippet("array", "success");
   const prefix = cache.getPrefix();
   const prefixedVarName = (index: number) => `${prefix}${index}`;
 
@@ -24,11 +24,12 @@ export const tupleRenderer: (params: IRenderParams<"tuple">) => string = ({
             varName: `${varName}[${i}]`,
             cache
           })};
-          if (!${elementVarName}.success) {
-            return error('keyed', {
+          if (${elementVarName}.kind !== 'success') {
+            return {
+              kind: 'object-key',
               key: '[${i}]',
               value: ${elementVarName}
-            });
+            } as const;
           }
       `;
         })
@@ -42,7 +43,10 @@ export const tupleRenderer: (params: IRenderParams<"tuple">) => string = ({
           .join(", ")}
       ]);
     } else {
-      return error('single', { value: 'array' });
+      return {
+        kind: 'single',
+        value: 'array'
+      } as const;
     }
   })()`;
 };

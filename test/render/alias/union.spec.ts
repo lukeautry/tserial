@@ -39,13 +39,12 @@ describe("[alias] deserialize union type", () => {
   it("should not deserialize true", () => {
     assertError(deserialize("TypeAlias", true), result => {
       expect(result).toEqual({
-        success: false,
         kind: "one-of",
         values: [
-          { success: false, kind: "single", value: "one" },
-          { success: false, kind: "single", value: "two" },
-          { success: false, kind: "single", value: false },
-          { success: false, kind: "single", value: "undefined" }
+          { kind: "single", value: "one" },
+          { kind: "single", value: "two" },
+          { kind: "single", value: false },
+          { kind: "single", value: "undefined" }
         ]
       });
     });

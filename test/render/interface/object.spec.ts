@@ -33,10 +33,9 @@ describe("[alias] deserialize object", () => {
       }),
       result => {
         expect(result).toEqual({
-          success: false,
-          kind: "keyed",
+          kind: "object-key",
           key: "valueTwo",
-          value: { success: false, kind: "single", value: "to exist" }
+          value: { kind: "single", value: "to exist" }
         });
       }
     );
@@ -50,10 +49,9 @@ describe("[alias] deserialize object", () => {
       }),
       result => {
         expect(result).toEqual({
-          success: false,
-          kind: "keyed",
+          kind: "object-key",
           key: "valueTwo",
-          value: { success: false, kind: "single", value: "number" }
+          value: { kind: "single", value: "number" }
         });
       }
     );

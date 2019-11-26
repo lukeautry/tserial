@@ -1,57 +1,39 @@
 import { TypeAlias } from "./union.spec";
 
-type Result<T> = ISuccessResult<T> | Expected;
+type Result<T> = Readonly<ISuccessResult<T> | Expected>;
 
 interface ISuccessResult<T> {
-  success: true;
+  kind: "success";
   value: T;
 }
 
-type Expected = IAllOf | IOneOf | ISingle | IKeyed;
+type Expected = IAllOf | IOneOf | ISingle | IObjectKey;
 
-interface IExpectedTypes {
-  "all-of": IAllOf;
-  "one-of": IOneOf;
-  single: ISingle;
-  keyed: IKeyed;
+interface IAllOf {
+  kind: "all-of";
+  values: ReadonlyArray<Expected>;
 }
 
-interface IExpected<K extends keyof IExpectedTypes> {
-  success: false;
-  kind: K;
+interface IOneOf {
+  kind: "one-of";
+  values: ReadonlyArray<Expected>;
 }
 
-interface IAllOf extends IExpected<"all-of"> {
-  values: (JSONType | Expected)[];
+interface ISingle {
+  kind: "single";
+  value: JSONType;
 }
 
-interface IOneOf extends IExpected<"one-of"> {
-  values: (JSONType | Expected)[];
-}
-
-interface ISingle extends IExpected<"single"> {
-  value: JSONType | Expected;
-}
-
-interface IKeyed extends IExpected<"keyed"> {
+interface IObjectKey {
+  kind: "object-key";
   key: string;
   value: JSONType | Expected;
 }
 
 type JSONType = string | number | boolean | null;
 
-const error = <K extends keyof IExpectedTypes>(
-  kind: K,
-  value: Omit<IExpectedTypes[K], "success" | "kind">
-): IExpectedTypes[K] =>
-  (({
-    success: false,
-    kind,
-    ...value
-  } as unknown) as IExpectedTypes[K]);
-
 const success = <T>(value: T): ISuccessResult<T> => ({
-  success: true,
+  kind: "success",
   value
 });
 
@@ -68,42 +50,43 @@ const assertStringLiteral = <K extends string>(
 ): Result<K> =>
   isStringLiteral(value, expected)
     ? success(value)
-    : error("single", { value: expected });
+    : { kind: "single", value: expected };
 
 const isFalse = (value: unknown): value is false => value === false;
 
 const assertFalse = (value: unknown): Result<false> =>
-  isFalse(value) ? success(value) : error("single", { value: false });
+  isFalse(value) ? success(value) : { kind: "single", value: false };
 
 const isUndefined = (value: unknown): value is undefined =>
   typeof value === "undefined";
 
 const assertUndefined = (value: unknown): Result<undefined> =>
-  isUndefined(value) ? success(value) : error("single", { value: "undefined" });
+  isUndefined(value) ? success(value) : { kind: "single", value: "undefined" };
 
 const deserializers = {
   TypeAlias: (value: unknown): Result<TypeAlias> => {
     return (() => {
       const _ts1_0 = assertStringLiteral(value, "one");
-      if (_ts1_0.success) {
+      if (_ts1_0.kind === "success") {
         return _ts1_0;
       }
       const _ts1_1 = assertStringLiteral(value, "two");
-      if (_ts1_1.success) {
+      if (_ts1_1.kind === "success") {
         return _ts1_1;
       }
       const _ts1_2 = assertFalse(value);
-      if (_ts1_2.success) {
+      if (_ts1_2.kind === "success") {
         return _ts1_2;
       }
       const _ts1_3 = assertUndefined(value);
-      if (_ts1_3.success) {
+      if (_ts1_3.kind === "success") {
         return _ts1_3;
       }
 
-      return error("one-of", {
+      return {
+        kind: "one-of",
         values: [_ts1_0, _ts1_1, _ts1_2, _ts1_3]
-      });
+      } as const;
     })();
   }
 };

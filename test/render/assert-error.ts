@@ -4,7 +4,7 @@ export const assertError = <T>(
   result: Result<T>,
   fn?: (result: Expected) => void
 ) => {
-  if (!result.success) {
+  if (result.kind !== "success") {
     if (fn) {
       return fn(result);
     }

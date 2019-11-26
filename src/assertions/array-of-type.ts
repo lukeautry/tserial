@@ -1,7 +1,6 @@
 import { Result, Expected } from "./result";
 import { success } from "./success";
 import { isArray } from "./array";
-import { error } from "./error";
 
 type ArrayScanResult<T> = IArrayScanSuccess<T> | Expected;
 
@@ -16,11 +15,12 @@ const scanArrayForType = <T>(
 ): ArrayScanResult<T> => {
   for (let index = 0; index < values.length; index++) {
     const result = fn(values[index]);
-    if (!result.success) {
-      return error("keyed", {
+    if (result.kind !== "success") {
+      return {
+        kind: "object-key",
         key: `[${index}]`,
         value: result
-      });
+      };
     }
   }
 
@@ -39,6 +39,9 @@ export const assertArrayOfType = <T>(
       return scanResult;
     }
   } else {
-    return error("single", { value: "array" });
+    return {
+      kind: "single",
+      value: "array"
+    };
   }
 };

@@ -4,7 +4,7 @@ export const assertSuccess = <T>(
   result: Result<T>,
   fn?: (result: ISuccessResult<T>) => void
 ) => {
-  if (result.success) {
+  if (result.kind === "success") {
     if (fn) {
       return fn(result);
     }

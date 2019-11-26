@@ -8,14 +8,16 @@ export const objectRenderer: (params: IRenderParams<"object">) => string = ({
 }) => {
   cache.includeSnippet(
     "object",
-    value.properties.length ? "key-value" : "success",
-    "error"
+    value.properties.length ? "key-value" : "success"
   );
   const prefix = cache.getPrefix();
   const prefixedVarName = (index: number) => `${prefix}${index}`;
   return `(() => {
       if (!isObject(${varName})) {
-        return error('single', { value: 'object' });
+        return {
+          kind: 'single',
+          value: 'object'
+        } as const;
       }
 
       ${value.properties
@@ -38,7 +40,7 @@ export const objectRenderer: (params: IRenderParams<"object">) => string = ({
               varName: paramName,
               cache
             })});
-              if (!${propVarName}.success) { return ${propVarName}; }
+              if (${propVarName}.kind !== 'success') { return ${propVarName}; }
             `;
           } else {
             const assertKeyScript = `
@@ -59,11 +61,12 @@ export const objectRenderer: (params: IRenderParams<"object">) => string = ({
             })})`;
 
             const errorCheckScript = `
-              if (!${propVarName}.success) {
-                return error('keyed', {
+              if (${propVarName}.kind !== 'success') {
+                return {
+                  kind: 'object-key',
                   key: '${p.name}',
                   value: ${propVarName}
-                });
+                } as const;
               }
             `;
 

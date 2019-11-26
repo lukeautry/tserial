@@ -23,10 +23,9 @@ describe("[alias] deserialize string array", () => {
   it("should not deserialize array with non string", () => {
     assertError(deserialize("TypeAlias", ["one", 1]), result => {
       expect(result).toEqual({
-        success: false,
-        kind: "keyed",
+        kind: "object-key",
         key: "[1]",
-        value: { success: false, kind: "single", value: "string" }
+        value: { kind: "single", value: "string" }
       });
     });
   });

@@ -4,14 +4,14 @@ import { IRenderParams } from "./common/render-params";
 export const enumMemberRenderer: (
   params: IRenderParams<"enum-member">
 ) => string = ({ cache, value, name, varName }) => {
-  cache.includeSnippet("success", "error");
+  cache.includeSnippet("success");
 
   const escapedVal = getEscaped(value.value);
   return `(() => {
     if (${varName} === ${escapedVal}) {
       return success(${varName} as ${name});
     } else {
-      return error('single', { value: ${escapedVal} });
+      return { kind: 'single', value: ${escapedVal} } as const;
     }
   })()`;
 };

@@ -19,7 +19,7 @@ export const intersectionRenderer: (
             varName: lastPropVarName(),
             cache
           })};
-        if (!${propVarName}.success) { return ${propVarName}; }`;
+        if (${propVarName}.kind !== 'success') { return ${propVarName}; }`;
         })
         .join(LINE_BREAK)}
 

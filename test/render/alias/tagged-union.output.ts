@@ -1,62 +1,44 @@
 import { TypeAlias } from "./tagged-union.spec";
 
-type Result<T> = ISuccessResult<T> | Expected;
+const isObject = (value: unknown): value is {} => {
+  const type = typeof value;
+  return type === "function" || (type === "object" && !!value);
+};
+
+type Result<T> = Readonly<ISuccessResult<T> | Expected>;
 
 interface ISuccessResult<T> {
-  success: true;
+  kind: "success";
   value: T;
 }
 
-type Expected = IAllOf | IOneOf | ISingle | IKeyed;
+type Expected = IAllOf | IOneOf | ISingle | IObjectKey;
 
-interface IExpectedTypes {
-  "all-of": IAllOf;
-  "one-of": IOneOf;
-  single: ISingle;
-  keyed: IKeyed;
+interface IAllOf {
+  kind: "all-of";
+  values: ReadonlyArray<Expected>;
 }
 
-interface IExpected<K extends keyof IExpectedTypes> {
-  success: false;
-  kind: K;
+interface IOneOf {
+  kind: "one-of";
+  values: ReadonlyArray<Expected>;
 }
 
-interface IAllOf extends IExpected<"all-of"> {
-  values: (JSONType | Expected)[];
+interface ISingle {
+  kind: "single";
+  value: JSONType;
 }
 
-interface IOneOf extends IExpected<"one-of"> {
-  values: (JSONType | Expected)[];
-}
-
-interface ISingle extends IExpected<"single"> {
-  value: JSONType | Expected;
-}
-
-interface IKeyed extends IExpected<"keyed"> {
+interface IObjectKey {
+  kind: "object-key";
   key: string;
   value: JSONType | Expected;
 }
 
 type JSONType = string | number | boolean | null;
 
-const error = <K extends keyof IExpectedTypes>(
-  kind: K,
-  value: Omit<IExpectedTypes[K], "success" | "kind">
-): IExpectedTypes[K] =>
-  (({
-    success: false,
-    kind,
-    ...value
-  } as unknown) as IExpectedTypes[K]);
-
-const isObject = (value: unknown): value is {} => {
-  const type = typeof value;
-  return type === "function" || (type === "object" && !!value);
-};
-
 const success = <T>(value: T): ISuccessResult<T> => ({
-  success: true,
+  kind: "success",
   value
 });
 
@@ -72,7 +54,7 @@ const assertKeyValue = <O extends {}, K extends string, T>(
 ): Result<O & Record<K, T>> => {
   if (hasKey(value, key)) {
     const result = assertFn(value[key]);
-    if (result.success) {
+    if (result.kind === "success") {
       // at this point, we should have merged assertions here, but that doesn't
       // seem to be happening, hence the cast
       return success((value as unknown) as O & Record<K, T>);
@@ -80,7 +62,10 @@ const assertKeyValue = <O extends {}, K extends string, T>(
       return result;
     }
   } else {
-    return error("single", { value: "to exist" });
+    return {
+      kind: "single",
+      value: "to exist"
+    };
   }
 };
 
@@ -97,126 +82,142 @@ const assertStringLiteral = <K extends string>(
 ): Result<K> =>
   isStringLiteral(value, expected)
     ? success(value)
-    : error("single", { value: expected });
+    : { kind: "single", value: expected };
 
 const isString = (value: unknown): value is string => typeof value === "string";
 
 const assertString = (value: unknown): Result<string> =>
-  isString(value) ? success(value) : error("single", { value: "string" });
+  isString(value) ? success(value) : { kind: "single", value: "string" };
 
 const isNumber = (value: unknown): value is number => typeof value === "number";
 
 const assertNumber = (value: unknown): Result<number> =>
-  isNumber(value) ? success(value) : error("single", { value: "number" });
+  isNumber(value) ? success(value) : { kind: "single", value: "number" };
 
 const isTrue = (value: unknown): value is true => value === true;
 
 const assertTrue = (value: unknown): Result<true> =>
-  isTrue(value) ? success(value) : error("single", { value: true });
+  isTrue(value) ? success(value) : { kind: "single", value: true };
 
 const deserializers = {
   TypeAlias: (value: unknown): Result<TypeAlias> => {
     return (() => {
       const _ts1_0 = (() => {
         if (!isObject(value)) {
-          return error("single", { value: "object" });
+          return {
+            kind: "single",
+            value: "object"
+          } as const;
         }
 
         const _ts2_0 = assertKeyValue(value, "kind", _ts3_v =>
           assertStringLiteral(_ts3_v, "one")
         );
 
-        if (!_ts2_0.success) {
-          return error("keyed", {
+        if (_ts2_0.kind !== "success") {
+          return {
+            kind: "object-key",
             key: "kind",
             value: _ts2_0
-          });
+          } as const;
         }
 
         const _ts2_1 = assertKeyValue(_ts2_0.value, "value", _ts4_v =>
           assertString(_ts4_v)
         );
 
-        if (!_ts2_1.success) {
-          return error("keyed", {
+        if (_ts2_1.kind !== "success") {
+          return {
+            kind: "object-key",
             key: "value",
             value: _ts2_1
-          });
+          } as const;
         }
 
         return _ts2_1;
       })();
-      if (_ts1_0.success) {
+      if (_ts1_0.kind === "success") {
         return _ts1_0;
       }
       const _ts1_1 = (() => {
         if (!isObject(value)) {
-          return error("single", { value: "object" });
+          return {
+            kind: "single",
+            value: "object"
+          } as const;
         }
 
         const _ts5_0 = assertKeyValue(value, "kind", _ts6_v =>
           assertStringLiteral(_ts6_v, "two")
         );
 
-        if (!_ts5_0.success) {
-          return error("keyed", {
+        if (_ts5_0.kind !== "success") {
+          return {
+            kind: "object-key",
             key: "kind",
             value: _ts5_0
-          });
+          } as const;
         }
 
         const _ts5_1 = assertKeyValue(_ts5_0.value, "value", _ts7_v =>
           assertNumber(_ts7_v)
         );
 
-        if (!_ts5_1.success) {
-          return error("keyed", {
+        if (_ts5_1.kind !== "success") {
+          return {
+            kind: "object-key",
             key: "value",
             value: _ts5_1
-          });
+          } as const;
         }
 
         return _ts5_1;
       })();
-      if (_ts1_1.success) {
+      if (_ts1_1.kind === "success") {
         return _ts1_1;
       }
       const _ts1_2 = (() => {
         if (!isObject(value)) {
-          return error("single", { value: "object" });
+          return {
+            kind: "single",
+            value: "object"
+          } as const;
         }
 
         const _ts8_0 = assertKeyValue(value, "kind", _ts9_v =>
           assertStringLiteral(_ts9_v, "three")
         );
 
-        if (!_ts8_0.success) {
-          return error("keyed", {
+        if (_ts8_0.kind !== "success") {
+          return {
+            kind: "object-key",
             key: "kind",
             value: _ts8_0
-          });
+          } as const;
         }
 
         const _ts8_1 = assertKeyValue(_ts8_0.value, "value", _ts10_v =>
           assertTrue(_ts10_v)
         );
 
-        if (!_ts8_1.success) {
-          return error("keyed", {
+        if (_ts8_1.kind !== "success") {
+          return {
+            kind: "object-key",
             key: "value",
             value: _ts8_1
-          });
+          } as const;
         }
 
         return _ts8_1;
       })();
-      if (_ts1_2.success) {
+      if (_ts1_2.kind === "success") {
         return _ts1_2;
       }
 
-      return error("one-of", {
+      return {
+        kind: "one-of",
         values: [_ts1_0, _ts1_1, _ts1_2]
-      });
+      } as const;
     })();
   }
 };

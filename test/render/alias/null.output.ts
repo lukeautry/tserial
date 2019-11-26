@@ -1,39 +1,31 @@
 import { TypeAlias } from "./null.spec";
 
-type Result<T> = ISuccessResult<T> | Expected;
+type Result<T> = Readonly<ISuccessResult<T> | Expected>;
 
 interface ISuccessResult<T> {
-  success: true;
+  kind: "success";
   value: T;
 }
 
-type Expected = IAllOf | IOneOf | ISingle | IKeyed;
+type Expected = IAllOf | IOneOf | ISingle | IObjectKey;
 
-interface IExpectedTypes {
-  "all-of": IAllOf;
-  "one-of": IOneOf;
-  single: ISingle;
-  keyed: IKeyed;
+interface IAllOf {
+  kind: "all-of";
+  values: ReadonlyArray<Expected>;
 }
 
-interface IExpected<K extends keyof IExpectedTypes> {
-  success: false;
-  kind: K;
+interface IOneOf {
+  kind: "one-of";
+  values: ReadonlyArray<Expected>;
 }
 
-interface IAllOf extends IExpected<"all-of"> {
-  values: (JSONType | Expected)[];
+interface ISingle {
+  kind: "single";
+  value: JSONType;
 }
 
-interface IOneOf extends IExpected<"one-of"> {
-  values: (JSONType | Expected)[];
-}
-
-interface ISingle extends IExpected<"single"> {
-  value: JSONType | Expected;
-}
-
-interface IKeyed extends IExpected<"keyed"> {
+interface IObjectKey {
+  kind: "object-key";
   key: string;
   value: JSONType | Expected;
 }
@@ -41,24 +33,14 @@ interface IKeyed extends IExpected<"keyed"> {
 type JSONType = string | number | boolean | null;
 
 const success = <T>(value: T): ISuccessResult<T> => ({
-  success: true,
+  kind: "success",
   value
 });
-
-const error = <K extends keyof IExpectedTypes>(
-  kind: K,
-  value: Omit<IExpectedTypes[K], "success" | "kind">
-): IExpectedTypes[K] =>
-  (({
-    success: false,
-    kind,
-    ...value
-  } as unknown) as IExpectedTypes[K]);
 
 const isNull = (value: unknown): value is null => value === null;
 
 const assertNull = (value: unknown): Result<null> =>
-  isNull(value) ? success(value) : error("single", { value: null });
+  isNull(value) ? success(value) : { kind: "single", value: null };
 
 const deserializers = {
   TypeAlias: (value: unknown): Result<TypeAlias> => {

@@ -79,20 +79,17 @@ describe("[alias] big tagged union", () => {
           deserialize("TestAlias", firstDataWithMissingProp),
           result => {
             expect(result).toEqual({
-              success: false,
               kind: "one-of",
               values: [
                 {
-                  success: false,
-                  kind: "keyed",
+                  kind: "object-key",
                   key: "propOne",
-                  value: { success: false, kind: "single", value: "to exist" }
+                  value: { kind: "single", value: "to exist" }
                 },
                 {
-                  success: false,
-                  kind: "keyed",
+                  kind: "object-key",
                   key: "type",
-                  value: { success: false, kind: "single", value: "second" }
+                  value: { kind: "single", value: "second" }
                 }
               ]
             });

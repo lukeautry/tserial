@@ -1,6 +1,5 @@
 import { Result } from "./result";
 import { success } from "./success";
-import { error } from "./error";
 
 const isStringLiteral = <K extends string>(
   value: unknown,
@@ -15,4 +14,4 @@ export const assertStringLiteral = <K extends string>(
 ): Result<K> =>
   isStringLiteral(value, expected)
     ? success(value)
-    : error("single", { value: expected });
+    : { kind: "single", value: expected };

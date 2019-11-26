@@ -8,8 +8,6 @@ export const unionRenderer: (params: IRenderParams<"union">) => string = ({
   varName,
   name
 }) => {
-  cache.includeSnippet("error");
-
   const prefix = cache.getPrefix();
   const prefixedVarName = (index: number) => `${prefix}${index}`;
   return `(() => {
@@ -22,12 +20,13 @@ export const unionRenderer: (params: IRenderParams<"union">) => string = ({
           varName,
           cache
         })};
-      if (${resultVarName}.success) { return ${resultVarName}; }`;
+      if (${resultVarName}.kind === 'success') { return ${resultVarName}; }`;
       })
       .join(LINE_BREAK)}
 
-    return error('one-of', {
+    return {
+      kind: 'one-of',
       values: [${value.values.map((_v, i) => `${prefixedVarName(i)}`)}]
-    });
+    } as const;
   })()`;
 };

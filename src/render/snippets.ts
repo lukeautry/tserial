@@ -4,8 +4,8 @@
 export const snippets = {
   "array-of-type": {
     content:
-      'type ArrayScanResult<T> = IArrayScanSuccess<T> | Expected;\n\ninterface IArrayScanSuccess<T> {\n  kind: "success";\n  values: T[];\n}\n\nconst scanArrayForType = <T>(\n  values: unknown[],\n  fn: (ele: unknown) => Result<T>\n): ArrayScanResult<T> => {\n  for (let index = 0; index < values.length; index++) {\n    const result = fn(values[index]);\n    if (!result.success) {\n      return error("keyed", {\n        key: `[${index}]`,\n        value: result\n      });\n    }\n  }\n\n  return { kind: "success", values: values as T[] };\n};\n\nconst assertArrayOfType = <T>(\n  value: unknown,\n  fn: (ele: unknown) => Result<T>\n): Result<T[]> => {\n  if (isArray(value)) {\n    const scanResult = scanArrayForType(value, fn);\n    if (scanResult.kind === "success") {\n      return success(scanResult.values);\n    } else {\n      return scanResult;\n    }\n  } else {\n    return error("single", { value: "array" });\n  }\n};',
-    dependencies: ["result", "success", "array", "error"]
+      'type ArrayScanResult<T> = IArrayScanSuccess<T> | Expected;\n\ninterface IArrayScanSuccess<T> {\n  kind: "success";\n  values: T[];\n}\n\nconst scanArrayForType = <T>(\n  values: unknown[],\n  fn: (ele: unknown) => Result<T>\n): ArrayScanResult<T> => {\n  for (let index = 0; index < values.length; index++) {\n    const result = fn(values[index]);\n    if (result.kind !== "success") {\n      return {\n        kind: "object-key",\n        key: `[${index}]`,\n        value: result\n      };\n    }\n  }\n\n  return { kind: "success", values: values as T[] };\n};\n\nconst assertArrayOfType = <T>(\n  value: unknown,\n  fn: (ele: unknown) => Result<T>\n): Result<T[]> => {\n  if (isArray(value)) {\n    const scanResult = scanArrayForType(value, fn);\n    if (scanResult.kind === "success") {\n      return success(scanResult.values);\n    } else {\n      return scanResult;\n    }\n  } else {\n    return {\n      kind: "single",\n      value: "array"\n    };\n  }\n};',
+    dependencies: ["result", "success", "array"]
   },
   array: {
     content:
@@ -14,18 +14,13 @@ export const snippets = {
   },
   boolean: {
     content:
-      'const isBoolean = (value: unknown): value is boolean =>\n  typeof value === "boolean";\n\nconst assertBoolean = (value: unknown): Result<boolean> =>\n  isBoolean(value) ? success(value) : error("single", { value: "boolean" });',
-    dependencies: ["result", "success", "error"]
-  },
-  error: {
-    content:
-      'const error = <K extends keyof IExpectedTypes>(\n  kind: K,\n  value: Omit<IExpectedTypes[K], "success" | "kind">\n): IExpectedTypes[K] =>\n  (({\n    success: false,\n    kind,\n    ...value\n  } as unknown) as IExpectedTypes[K]);',
-    dependencies: ["result"]
+      'const isBoolean = (value: unknown): value is boolean =>\n  typeof value === "boolean";\n\nconst assertBoolean = (value: unknown): Result<boolean> =>\n  isBoolean(value) ? success(value) : { kind: "single", value: "boolean" };',
+    dependencies: ["result", "success"]
   },
   false: {
     content:
-      'const isFalse = (value: unknown): value is false => value === false;\n\nconst assertFalse = (value: unknown): Result<false> =>\n  isFalse(value) ? success(value) : error("single", { value: false });',
-    dependencies: ["result", "success", "error"]
+      'const isFalse = (value: unknown): value is false => value === false;\n\nconst assertFalse = (value: unknown): Result<false> =>\n  isFalse(value) ? success(value) : { kind: "single", value: false };',
+    dependencies: ["result", "success"]
   },
   "has-key": {
     content:
@@ -34,23 +29,23 @@ export const snippets = {
   },
   "key-value": {
     content:
-      'const assertKeyValue = <O extends {}, K extends string, T>(\n  value: O,\n  key: K,\n  assertFn: (val: unknown) => Result<T>\n): Result<O & Record<K, T>> => {\n  if (hasKey(value, key)) {\n    const result = assertFn(value[key]);\n    if (result.success) {\n      // at this point, we should have merged assertions here, but that doesn\'t\n      // seem to be happening, hence the cast\n      return success((value as unknown) as O & Record<K, T>);\n    } else {\n      return result;\n    }\n  } else {\n    return error("single", { value: "to exist" });\n  }\n};',
-    dependencies: ["result", "success", "has-key", "error"]
+      'const assertKeyValue = <O extends {}, K extends string, T>(\n  value: O,\n  key: K,\n  assertFn: (val: unknown) => Result<T>\n): Result<O & Record<K, T>> => {\n  if (hasKey(value, key)) {\n    const result = assertFn(value[key]);\n    if (result.kind === "success") {\n      // at this point, we should have merged assertions here, but that doesn\'t\n      // seem to be happening, hence the cast\n      return success((value as unknown) as O & Record<K, T>);\n    } else {\n      return result;\n    }\n  } else {\n    return {\n      kind: "single",\n      value: "to exist"\n    };\n  }\n};',
+    dependencies: ["result", "success", "has-key"]
   },
   null: {
     content:
-      'const isNull = (value: unknown): value is null => value === null;\n\nconst assertNull = (value: unknown): Result<null> =>\n  isNull(value) ? success(value) : error("single", { value: null });',
-    dependencies: ["result", "success", "error"]
+      'const isNull = (value: unknown): value is null => value === null;\n\nconst assertNull = (value: unknown): Result<null> =>\n  isNull(value) ? success(value) : { kind: "single", value: null };',
+    dependencies: ["result", "success"]
   },
   number: {
     content:
-      'const isNumber = (value: unknown): value is number =>\n  typeof value === "number";\n\nconst assertNumber = (value: unknown): Result<number> =>\n  isNumber(value) ? success(value) : error("single", { value: "number" });',
-    dependencies: ["result", "success", "error"]
+      'const isNumber = (value: unknown): value is number =>\n  typeof value === "number";\n\nconst assertNumber = (value: unknown): Result<number> =>\n  isNumber(value) ? success(value) : { kind: "single", value: "number" };',
+    dependencies: ["result", "success"]
   },
   "numeric-literal": {
     content:
-      'const isNumericLiteral = <N extends number>(\n  value: unknown,\n  expected: N\n): value is N => {\n  return value === expected;\n};\n\nconst assertNumericLiteral = <N extends number>(\n  value: unknown,\n  expected: N\n): Result<N> =>\n  isNumericLiteral(value, expected)\n    ? success(value)\n    : error("single", { value: expected });',
-    dependencies: ["result", "success", "error"]
+      'const isNumericLiteral = <N extends number>(\n  value: unknown,\n  expected: N\n): value is N => {\n  return value === expected;\n};\n\nconst assertNumericLiteral = <N extends number>(\n  value: unknown,\n  expected: N\n): Result<N> =>\n  isNumericLiteral(value, expected)\n    ? success(value)\n    : { kind: "single", value: expected };',
+    dependencies: ["result", "success"]
   },
   object: {
     content:
@@ -59,37 +54,37 @@ export const snippets = {
   },
   record: {
     content:
-      'const assertRecord = <O extends {}, T>(\n  value: O,\n  assertFn: (val: unknown) => Result<T>\n): Result<O & Record<string, T>> => {\n  const objKeys = Object.keys(value);\n  for (const key of objKeys) {\n    if (hasKey(value, key)) {\n      const objVal = value[key];\n      const result = assertFn(objVal);\n      if (!result.success) {\n        return result;\n      }\n    } else {\n      return error("keyed", { key, value });\n    }\n  }\n\n  return success(value as O & Record<string, T>);\n};',
-    dependencies: ["result", "has-key", "success", "error"]
+      'const assertRecord = <O extends {}, T>(\n  value: O,\n  assertFn: (val: unknown) => Result<T>\n): Result<O & Record<string, T>> => {\n  const objKeys = Object.keys(value);\n  for (const key of objKeys) {\n    if (hasKey(value, key)) {\n      const objVal = value[key];\n      const result = assertFn(objVal);\n      if (result.kind !== "success") {\n        return result;\n      }\n    } else {\n      return { kind: "object-key", key, value };\n    }\n  }\n\n  return success(value as O & Record<string, T>);\n};',
+    dependencies: ["result", "has-key", "success"]
   },
   result: {
     content:
-      'type Result<T> = ISuccessResult<T> | Expected;\n\ninterface ISuccessResult<T> {\n  success: true;\n  value: T;\n}\n\ntype Expected = IAllOf | IOneOf | ISingle | IKeyed;\n\ninterface IExpectedTypes {\n  "all-of": IAllOf;\n  "one-of": IOneOf;\n  single: ISingle;\n  keyed: IKeyed;\n}\n\ninterface IExpected<K extends keyof IExpectedTypes> {\n  success: false;\n  kind: K;\n}\n\ninterface IAllOf extends IExpected<"all-of"> {\n  values: (JSONType | Expected)[];\n}\n\ninterface IOneOf extends IExpected<"one-of"> {\n  values: (JSONType | Expected)[];\n}\n\ninterface ISingle extends IExpected<"single"> {\n  value: JSONType | Expected;\n}\n\ninterface IKeyed extends IExpected<"keyed"> {\n  key: string;\n  value: JSONType | Expected;\n}\n\ntype JSONType = string | number | boolean | null;',
+      'type Result<T> = Readonly<ISuccessResult<T> | Expected>;\n\ninterface ISuccessResult<T> {\n  kind: "success";\n  value: T;\n}\n\ntype Expected = IAllOf | IOneOf | ISingle | IObjectKey;\n\ninterface IAllOf {\n  kind: "all-of";\n  values: ReadonlyArray<Expected>;\n}\n\ninterface IOneOf {\n  kind: "one-of";\n  values: ReadonlyArray<Expected>;\n}\n\ninterface ISingle {\n  kind: "single";\n  value: JSONType;\n}\n\ninterface IObjectKey {\n  kind: "object-key";\n  key: string;\n  value: JSONType | Expected;\n}\n\ntype JSONType = string | number | boolean | null;',
     dependencies: []
   },
   "string-literal": {
     content:
-      'const isStringLiteral = <K extends string>(\n  value: unknown,\n  expected: K\n): value is K => {\n  return value === expected;\n};\n\nconst assertStringLiteral = <K extends string>(\n  value: unknown,\n  expected: K\n): Result<K> =>\n  isStringLiteral(value, expected)\n    ? success(value)\n    : error("single", { value: expected });',
-    dependencies: ["result", "success", "error"]
+      'const isStringLiteral = <K extends string>(\n  value: unknown,\n  expected: K\n): value is K => {\n  return value === expected;\n};\n\nconst assertStringLiteral = <K extends string>(\n  value: unknown,\n  expected: K\n): Result<K> =>\n  isStringLiteral(value, expected)\n    ? success(value)\n    : { kind: "single", value: expected };',
+    dependencies: ["result", "success"]
   },
   string: {
     content:
-      'const isString = (value: unknown): value is string =>\n  typeof value === "string";\n\nconst assertString = (value: unknown): Result<string> =>\n  isString(value) ? success(value) : error("single", { value: "string" });',
-    dependencies: ["result", "success", "error"]
+      'const isString = (value: unknown): value is string =>\n  typeof value === "string";\n\nconst assertString = (value: unknown): Result<string> =>\n  isString(value) ? success(value) : { kind: "single", value: "string" };',
+    dependencies: ["result", "success"]
   },
   success: {
     content:
-      "const success = <T>(value: T): ISuccessResult<T> => ({\n  success: true,\n  value\n});",
+      'const success = <T>(value: T): ISuccessResult<T> => ({\n  kind: "success",\n  value\n});',
     dependencies: ["result"]
   },
   true: {
     content:
-      'const isTrue = (value: unknown): value is true => value === true;\n\nconst assertTrue = (value: unknown): Result<true> =>\n  isTrue(value) ? success(value) : error("single", { value: true });',
-    dependencies: ["result", "success", "error"]
+      'const isTrue = (value: unknown): value is true => value === true;\n\nconst assertTrue = (value: unknown): Result<true> =>\n  isTrue(value) ? success(value) : { kind: "single", value: true };',
+    dependencies: ["result", "success"]
   },
   undefined: {
     content:
-      'const isUndefined = (value: unknown): value is undefined =>\n  typeof value === "undefined";\n\nconst assertUndefined = (value: unknown): Result<undefined> =>\n  isUndefined(value) ? success(value) : error("single", { value: "undefined" });',
-    dependencies: ["result", "success", "error"]
+      'const isUndefined = (value: unknown): value is undefined =>\n  typeof value === "undefined";\n\nconst assertUndefined = (value: unknown): Result<undefined> =>\n  isUndefined(value) ? success(value) : { kind: "single", value: "undefined" };',
+    dependencies: ["result", "success"]
   }
 };
