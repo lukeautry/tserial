@@ -7,22 +7,22 @@ export interface ISuccessResult<T> {
 
 export type Expected = IAllOf | IOneOf | ISingle | IObjectKey;
 
-interface IAllOf {
+export interface IAllOf {
   kind: "all-of";
   values: ReadonlyArray<Expected>;
 }
 
-interface IOneOf {
+export interface IOneOf {
   kind: "one-of";
   values: ReadonlyArray<Expected>;
 }
 
-interface ISingle {
+export interface ISingle {
   kind: "single";
   value: JSONType;
 }
 
-interface IObjectKey {
+export interface IObjectKey {
   kind: "object-key";
   key: string;
   value: JSONType | Expected;
